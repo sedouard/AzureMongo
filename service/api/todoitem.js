@@ -40,3 +40,29 @@ exports.post = function(request, response) {
  
  
 };
+
+exports.get = function(request, response) {
+    var itemId = request.query.itemId;
+    var db = mongoose.connection;
+ 
+    mongoose.connect(process.env.MongoConnectionString);
+    db.on('error', function(){
+    	response.send(500, { message : 'Failed to connect to mongo' });
+ 
+    });
+ 
+    db.once('open', function callback() {
+    	console.log("Sucessfully Logged into mongo");
+    	
+    	ToDoItem.findOne({_id : itemId}, function(err, todoItem)
+    	{
+    		if(err) {
+    			mongoose.disconnect();
+    			return response.send(500, { message : 'Failed to get todo item : ' + itemId + ' ' + err });
+    		}
+    		mongoose.disconnect();
+    		return response.send(200, todoItem);
+    	});
+ 
+	});
+};
